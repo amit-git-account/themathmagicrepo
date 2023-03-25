@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>GraphQL Tiles</title>
+    <style>
+      .tile {
+        border: 1px solid lightgray;
+        padding: 10px;
+        margin: 10px;
+        width: 300px;
+        height: 250px;
+        display: inline-block;
+        cursor: pointer;
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s ease-in-out;
+
+      }
+      .tile:hover {
+  transform: scale(1.1);}
+      #detail-view {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="tiles-container"></div>
+    <div id="detail-view">
+      <h2 id="detail-name"></h2>
+      <p id="detail-description"></p>
+      <button id="back-button">Back</button>
+    </div>
+   
+
+    <script>
+
+ var query = `
+        query GetMathSATTable {
+              Math_SAT_table (order_by: {id: asc}){
+                        id
+                        Answer
+                        Hint
+                        Question
+                        complexity
+                  }
+        }
+      `;
+      const endpoint = 'https://prepared-tomcat-84.hasura.app/v1/graphql'; // Replace with your GraphQL API endpoint
+
+
+      const fetchData = async () => {
+        try {
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+            },
+            body: JSON.stringify({ query }),
+          });
+          const { data } = await response.json(); // Parse the response as JSON and extract the data
+          console.log(data);
+          if (data) {
+        createTiles(data)
+          } else {
+            console.error('No data found.');
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      };
+
+            window.onload = () => {
+        fetchData(); // Fetch data when the page loads
+      };
+
+      // Mock data for GraphQL query
+ /*    const data = {
+        users: [
+          { id: "1", name: "Tile 1", description: "Description for Tile 1" },
+          { id: "2", name: "Tile 2", description: "Description for Tile 2" },
+          { id: "3", name: "Tile 3", description: "Description for Tile 3" }
+        ]
+      };
+
+console.log(data); */
+
+function createTiles(data){
+
+          const tilesContainer = document.getElementById("tiles-container");
+          // Create tile for each data point
+          data.Math_SAT_table.forEach((item) => {
+            const tile = document.createElement("div");
+            tile.className = "tile";
+            tile.innerHTML = `
+              <h3>${item.id}</h3>
+              <p>${item.Question}</p>
+              <p>${item.Answer}</p>
+            `;
+
+            // Show detail view on tile click
+            tile.addEventListener("click", () => {
+              const detailView = document.getElementById("detail-view");
+              const detailName = document.getElementById("detail-name");
+              const detailDescription = document.getElementById("detail-description");
+
+              detailName.innerHTML = item.id;
+              detailDescription.innerHTML = item.Question;
+
+              tilesContainer.style.display = "none";
+              detailView.style.display = "block";
+            });
+
+            tilesContainer.appendChild(tile);
+          });
+
+                // Show tile view on back button click
+              const backButton = document.getElementById("back-button");
+              backButton.addEventListener("click", () => {
+              tilesContainer.style.display = "block";
+              detailView.style.display = "none";
+      });
+      }
+
+
+    </script>
+  </body>
+</html>
